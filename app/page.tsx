@@ -159,7 +159,7 @@ export default function Home() {
 
       {readyMessage !== null && <p>{readyMessage}</p>}
 
-      {downloadUrl !== null && (
+      {downloadUrl !== null && downloadUrl !== "error" && (
         <a href={downloadUrl} download>
           Click here to download
         </a>

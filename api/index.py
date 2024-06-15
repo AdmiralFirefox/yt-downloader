@@ -3,11 +3,22 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 from pytube import YouTube
 from collections import OrderedDict
+from cloudinary import uploader, config
+from dotenv import load_dotenv
 import threading
 import shutil
 import os
 import re
 
+# Load environment variables
+load_dotenv()
+
+# Configure Cloudinary
+config(
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME")
+)
 
 # App instance
 app = Flask(__name__)
@@ -58,10 +69,22 @@ def convert_to_dict_list(stream_list):
     return dict_list
 
 
-def process_video(video_stream):
-    file_path = os.path.join(VIDEO_FOLDER, video_stream.default_filename)
+def upload_video_to_cloudinary(video_stream):
     video_stream.download(output_path=VIDEO_FOLDER)
-    return file_path
+   
+    filename = os.path.splitext(video_stream.default_filename)
+    file_path = os.path.join(VIDEO_FOLDER, video_stream.default_filename)
+
+    upload_result = uploader.upload_large(file_path,
+                                    public_id=filename[0],
+                                    resource_type="video")
+    return upload_result["url"]
+
+
+def process_video(video_stream):
+    video_url = upload_video_to_cloudinary(video_stream)
+
+    return video_url
 
 
 def on_progress(stream, chunk, bytes_remaining):
@@ -102,16 +125,21 @@ def download_options():
 
 def download_video_thread(saved_link, input_resolution):
     with app.app_context():
-        yt_video = YouTube(saved_link, on_progress_callback=on_progress)
+        try:
+            yt_video = YouTube(saved_link, on_progress_callback=on_progress)
 
-        if input_resolution in current_app.available_resolutions:
-            video_itag = current_app.available_resolutions[input_resolution]
-            video_file_path = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
-            video_filename = os.path.basename(video_file_path)
+            if input_resolution in current_app.available_resolutions:
+                video_itag = current_app.available_resolutions[input_resolution]
+                video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
 
+                socketio.emit("video_ready", {
+                    "message": "Your video is ready to download",
+                    "video_url": video_url
+                })
+        except Exception as e:
             socketio.emit("video_ready", {
-                "message": "Your video is ready to download",
-                "video_url": f"/api/save_video/{video_filename}"
+                "message": f"Error: {str(e)}",
+                "video_url": "error",
             })
 
 
@@ -130,11 +158,6 @@ def download_video():
     return jsonify({
         "initial_message": "Video download has started, you will be notified when it is ready."
     })
-
-
-@app.route("/api/save_video/<filename>", methods=["GET"])
-def save_video(filename):
-    return send_from_directory(VIDEO_FOLDER, filename, as_attachment=True)
 
 
 if __name__ == "__main__":
