@@ -2,6 +2,7 @@
 
 import { FormEvent, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
+import io from "socket.io-client";
 import Axios from "axios";
 import styles from "@/styles/page.module.scss";
 
@@ -48,6 +49,7 @@ const sendResolution = async (resolution: string, savedLink: string) => {
 export default function Home() {
   const [inputLink, setInputLink] = useState("");
   const [savedLink, setSavedLink] = useState("");
+  const [progress, setProgress] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
@@ -83,7 +85,20 @@ export default function Home() {
     setSavedLink("");
     mutation.reset();
     resolution_mutation.reset();
+    setProgress(null);
   };
+
+  useEffect(() => {
+    const socket = io("http://localhost:8000");
+
+    socket.on("progress", (data: { percentage: string }) => {
+      setProgress(parseInt(data.percentage, 10));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     if (resolution_mutation.isSuccess && resolution_mutation.data?.video_url) {
@@ -139,6 +154,12 @@ export default function Home() {
             )}
           </div>
         )}
+
+      {progress !== null && (
+        <div>
+          <p>Download Progress: {progress}%</p>
+        </div>
+      )}
     </main>
   );
 }

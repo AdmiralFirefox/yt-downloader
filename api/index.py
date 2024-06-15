@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, current_app, send_from_directory
+from flask_socketio import SocketIO
 from flask_cors import CORS
 from pytube import YouTube
 from collections import OrderedDict
@@ -10,7 +11,7 @@ import re
 # App instance
 app = Flask(__name__)
 CORS(app)
-
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 VIDEO_FOLDER = "/tmp/downloaded_yt_video"
 
@@ -62,6 +63,14 @@ def process_video(video_stream):
     return file_path
 
 
+def on_progress(stream, chunk, bytes_remaining):
+    total_size = stream.filesize
+    bytes_downloaded = total_size - bytes_remaining
+    percentage_of_completion = bytes_downloaded / total_size * 100
+    int_percentage = str(int(percentage_of_completion))
+    socketio.emit('progress', {'percentage': int_percentage})
+
+
 @app.route("/api/download_options", methods=["POST"])
 def download_options():
     # Clear all files in the directory
@@ -99,7 +108,7 @@ def download_video():
     input_resolution = data.get("resolution")
     saved_link = data.get("savedLink")
 
-    yt_video = YouTube(saved_link)
+    yt_video = YouTube(saved_link, on_progress_callback=on_progress)
 
     # Download the video if the chosen resolution is available
     if input_resolution in current_app.available_resolutions:
@@ -119,4 +128,4 @@ def save_video(filename):
 
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    socketio.run(app, port=8000)
