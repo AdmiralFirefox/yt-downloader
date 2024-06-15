@@ -3,6 +3,7 @@ from flask_socketio import SocketIO
 from flask_cors import CORS
 from pytube import YouTube
 from collections import OrderedDict
+import threading
 import shutil
 import os
 import re
@@ -68,7 +69,7 @@ def on_progress(stream, chunk, bytes_remaining):
     bytes_downloaded = total_size - bytes_remaining
     percentage_of_completion = bytes_downloaded / total_size * 100
     int_percentage = str(int(percentage_of_completion))
-    socketio.emit('progress', {'percentage': int_percentage})
+    socketio.emit("progress", {"percentage": int_percentage})
 
 
 @app.route("/api/download_options", methods=["POST"])
@@ -93,10 +94,25 @@ def download_options():
     
     # Convert available_resolutions into the desired list of dictionaries format
     available_resolutions_list = [{"res": res, "itag": itag} for res, itag in current_app.available_resolutions.items()]
-    
+
     return jsonify({
         "available_resolutions": available_resolutions_list,
     })
+
+
+def download_video_thread(saved_link, input_resolution):
+    with app.app_context():
+        yt_video = YouTube(saved_link, on_progress_callback=on_progress)
+
+        if input_resolution in current_app.available_resolutions:
+            video_itag = current_app.available_resolutions[input_resolution]
+            video_file_path = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
+            video_filename = os.path.basename(video_file_path)
+
+            socketio.emit("video_ready", {
+                "message": "Your video is ready to download",
+                "video_url": f"/api/save_video/{video_filename}"
+            })
 
 
 @app.route("/api/download_video", methods=["POST"])
@@ -108,17 +124,11 @@ def download_video():
     input_resolution = data.get("resolution")
     saved_link = data.get("savedLink")
 
-    yt_video = YouTube(saved_link, on_progress_callback=on_progress)
-
-    # Download the video if the chosen resolution is available
-    if input_resolution in current_app.available_resolutions:
-        video_itag = current_app.available_resolutions[input_resolution]
-        video_file_path = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
-        video_filename = os.path.basename(video_file_path)
+    # Start a new thread to handle the video download
+    threading.Thread(target=download_video_thread, args=(saved_link, input_resolution)).start()
 
     return jsonify({
-        "message": "Your video is ready to download",
-        "video_url": f"/api/save_video/{video_filename}"
+        "initial_message": "Video download has started, you will be notified when it is ready."
     })
 
 

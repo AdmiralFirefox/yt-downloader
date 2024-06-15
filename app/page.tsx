@@ -14,8 +14,7 @@ interface InputProps {
 }
 
 interface ResolutionProps {
-  message: string;
-  video_url: string;
+  initial_message: string;
 }
 
 const sendInputLink = async (inputLink: string) => {
@@ -50,6 +49,7 @@ export default function Home() {
   const [inputLink, setInputLink] = useState("");
   const [savedLink, setSavedLink] = useState("");
   const [progress, setProgress] = useState<number | null>(null);
+  const [readyMessage, setReadyMessage] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
@@ -86,6 +86,8 @@ export default function Home() {
     mutation.reset();
     resolution_mutation.reset();
     setProgress(null);
+    setDownloadUrl(null);
+    setReadyMessage(null);
   };
 
   useEffect(() => {
@@ -95,16 +97,15 @@ export default function Home() {
       setProgress(parseInt(data.percentage, 10));
     });
 
+    socket.on("video_ready", (data: { message: string; video_url: string }) => {
+      setReadyMessage(data.message);
+      setDownloadUrl(data.video_url);
+    });
+
     return () => {
       socket.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (resolution_mutation.isSuccess && resolution_mutation.data?.video_url) {
-      setDownloadUrl(resolution_mutation.data.video_url);
-    }
-  }, [resolution_mutation.isSuccess, resolution_mutation.data]);
 
   return (
     <main>
@@ -146,12 +147,7 @@ export default function Home() {
       {resolution_mutation.isSuccess &&
         resolution_mutation.data !== undefined && (
           <div>
-            <p>{resolution_mutation.data.message}</p>
-            {downloadUrl && (
-              <a href={downloadUrl} download>
-                Click here to download
-              </a>
-            )}
+            <p>{resolution_mutation.data.initial_message}</p>
           </div>
         )}
 
@@ -159,6 +155,14 @@ export default function Home() {
         <div>
           <p>Download Progress: {progress}%</p>
         </div>
+      )}
+
+      {readyMessage !== null && <p>{readyMessage}</p>}
+
+      {downloadUrl !== null && (
+        <a href={downloadUrl} download>
+          Click here to download
+        </a>
       )}
     </main>
   );
