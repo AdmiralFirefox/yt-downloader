@@ -37,6 +37,7 @@ else:
 # Initialize the application context
 with app.app_context():
     current_app.available_resolutions = OrderedDict()
+    current_app.previous_video_public_id = None
 
 
 def delete_all_files():
@@ -75,9 +76,15 @@ def upload_video_to_cloudinary(video_stream):
     filename = os.path.splitext(video_stream.default_filename)
     file_path = os.path.join(VIDEO_FOLDER, video_stream.default_filename)
 
+    # Clean filename title for public_id (Remove emojis)
+    emoji_pattern = r"[^\w\s_-]"
+    cleaned_title = re.sub(emoji_pattern, "", filename[0])   
+
     upload_result = uploader.upload_large(file_path,
-                                    public_id=filename[0],
+                                    public_id=cleaned_title,
                                     resource_type="video")
+    
+    current_app.previous_video_public_id = upload_result["public_id"]
     return upload_result["url"]
 
 
@@ -130,6 +137,15 @@ def download_video_thread(saved_link, input_resolution):
 
             if input_resolution in current_app.available_resolutions:
                 video_itag = current_app.available_resolutions[input_resolution]
+                
+                # Delete the previous video if it exists
+                previous_video_public_id = current_app.previous_video_public_id
+                if previous_video_public_id:
+                    try:
+                        uploader.destroy(previous_video_public_id, resource_type="video")
+                    except Exception as e:
+                        print(f"Failed to delete previous video: {e}")
+
                 video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
 
                 socketio.emit("video_ready", {
