@@ -36,7 +36,9 @@ else:
 
 # Initialize the application context
 with app.app_context():
-    current_app.available_resolutions = OrderedDict()
+    current_app.video_resolutions = OrderedDict()
+    current_app.audio_resolutions = OrderedDict()
+    current_app.combined_resolutions = OrderedDict()
     current_app.previous_video_public_id = None
 
 
@@ -107,8 +109,10 @@ def download_options():
     # Clear all files in the directory
     delete_all_files()
 
-    # Clear the available_resolutions dictionary
-    current_app.available_resolutions.clear()
+    # Clear dictionaries
+    current_app.video_resolutions.clear()
+    current_app.audio_resolutions.clear()
+    current_app.combined_resolutions.clear()
 
     data = request.get_json()
     input_link = data.get("inputLink") # defined in useState
@@ -116,14 +120,27 @@ def download_options():
     yt_video = YouTube(input_link)
 
     streams = convert_to_dict_list(yt_video.streams.filter(progressive=True))
+    audio_streams = convert_to_dict_list(yt_video.streams.filter(only_audio=True, adaptive=True))
 
-    # Create an ordered dictionary to keep the first occurrence of each resolution
+    # Create an ordered dictionary to keep the first occurrence of each abr
+    for stream in audio_streams:
+        if stream["abr"] not in current_app.audio_resolutions:
+            current_app.audio_resolutions[stream["abr"]] = (stream["itag"], stream["mime_type"])
+
+    # Create an ordered dictionary to keep the first occurrence of each video resolution
     for stream in streams:
-        if stream["res"] not in current_app.available_resolutions:
-            current_app.available_resolutions[stream["res"]] = stream["itag"]
+        if stream["res"] not in current_app.video_resolutions:
+            current_app.video_resolutions[stream["res"]] = (stream["itag"], stream["mime_type"])
     
-    # Convert available_resolutions into the desired list of dictionaries format
-    available_resolutions_list = [{"res": res, "itag": itag} for res, itag in current_app.available_resolutions.items()]
+    # Combine both dictionaries
+    combine_resolutions = OrderedDict(list(current_app.video_resolutions.items()) + list(current_app.audio_resolutions.items()))
+    current_app.combined_resolutions = combine_resolutions
+    
+    # Convert available resolutions into the desired list of dictionaries format
+    available_resolutions_list = [
+        {"res": res, "itag": itag_type[0], "type": itag_type[1]}
+        for res, itag_type in current_app.combined_resolutions.items()
+    ]
 
     return jsonify({
         "available_resolutions": available_resolutions_list,
@@ -135,8 +152,8 @@ def download_video_thread(saved_link, input_resolution):
         try:
             yt_video = YouTube(saved_link, on_progress_callback=on_progress)
 
-            if input_resolution in current_app.available_resolutions:
-                video_itag = current_app.available_resolutions[input_resolution]
+            if input_resolution in current_app.combined_resolutions:
+                video_itag = current_app.combined_resolutions[input_resolution][0]
                 
                 # Delete the previous video if it exists
                 previous_video_public_id = current_app.previous_video_public_id
@@ -150,7 +167,7 @@ def download_video_thread(saved_link, input_resolution):
 
                 socketio.emit("video_ready", {
                     "message": "Your video is ready to download",
-                    "video_url": video_url
+                    "video_url": video_url,
                 })
         except Exception as e:
             socketio.emit("video_ready", {
