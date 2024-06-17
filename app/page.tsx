@@ -157,6 +157,10 @@ export default function Home() {
         </div>
       )}
 
+      {progress === 100 && readyMessage === null && downloadUrl === null && (
+        <p>Preparing download link. Please wait.</p>
+      )}
+
       {readyMessage !== null && <p>{readyMessage}</p>}
 
       {downloadUrl !== null && downloadUrl !== "error" && (
