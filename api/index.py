@@ -39,6 +39,7 @@ with app.app_context():
     current_app.video_resolutions = OrderedDict()
     current_app.audio_resolutions = OrderedDict()
     current_app.combined_resolutions = OrderedDict()
+    current_app.video_processing = False
     current_app.previous_video_public_id = None
 
 
@@ -149,6 +150,11 @@ def download_options():
 
 def download_video_thread(saved_link, input_resolution):
     with app.app_context():
+        current_app.video_processing = True
+        socketio.emit("video_processing_status", {
+            "video_processing": current_app.video_processing
+        })
+
         try:
             yt_video = YouTube(saved_link, on_progress_callback=on_progress)
 
@@ -170,10 +176,19 @@ def download_video_thread(saved_link, input_resolution):
                     "video_url": video_url,
                 })
         except Exception as e:
+            current_app.video_processing = False
+            socketio.emit("video_processing_status", {
+                "video_processing": current_app.video_processing
+            })
             socketio.emit("video_ready", {
                 "message": f"Error: {str(e)}",
                 "video_url": "error",
             })
+        
+        current_app.video_processing = False
+        socketio.emit("video_processing_status", {
+            "video_processing": current_app.video_processing
+        })
 
 
 @app.route("/api/download_video", methods=["POST"])

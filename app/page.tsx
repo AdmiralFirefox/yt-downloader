@@ -48,6 +48,7 @@ const sendResolution = async (resolution: string, savedLink: string) => {
 export default function Home() {
   const [inputLink, setInputLink] = useState("");
   const [savedLink, setSavedLink] = useState("");
+  const [videoProcessing, setVideoProcessing] = useState<boolean | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [readyMessage, setReadyMessage] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
@@ -74,6 +75,10 @@ export default function Home() {
   };
 
   const chooseResolution = (resolution: string) => {
+    setVideoProcessing(null);
+    setProgress(null);
+    setDownloadUrl(null);
+    setReadyMessage(null);
     resolution_mutation.mutate({
       resolution: resolution,
       savedLink: savedLink,
@@ -85,6 +90,7 @@ export default function Home() {
     setSavedLink("");
     mutation.reset();
     resolution_mutation.reset();
+    setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
     setReadyMessage(null);
@@ -96,6 +102,13 @@ export default function Home() {
     socket.on("progress", (data: { percentage: string }) => {
       setProgress(parseInt(data.percentage, 10));
     });
+
+    socket.on(
+      "video_processing_status",
+      (data: { video_processing: boolean }) => {
+        setVideoProcessing(data.video_processing);
+      }
+    );
 
     socket.on("video_ready", (data: { message: string; video_url: string }) => {
       setReadyMessage(data.message);
@@ -133,7 +146,7 @@ export default function Home() {
             <li key={resolution.itag}>
               <button
                 onClick={() => chooseResolution(resolution.res)}
-                disabled={resolution_mutation.isPending}
+                disabled={videoProcessing as boolean}
               >
                 {resolution.res}
               </button>
