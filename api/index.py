@@ -73,7 +73,7 @@ def convert_to_dict_list(stream_list):
     return dict_list
 
 
-def upload_video_to_cloudinary(video_stream):
+def process_video(video_stream):
     video_stream.download(output_path=VIDEO_FOLDER)
    
     filename = os.path.splitext(video_stream.default_filename)
@@ -83,18 +83,13 @@ def upload_video_to_cloudinary(video_stream):
     emoji_pattern = r"[^\w\s_-]"
     cleaned_title = re.sub(emoji_pattern, "", filename[0])   
 
+    # Upload video to cloudinary
     upload_result = uploader.upload_large(file_path,
                                     public_id=cleaned_title,
                                     resource_type="video")
     
     current_app.previous_video_public_id = upload_result["public_id"]
-    return upload_result["url"]
-
-
-def process_video(video_stream):
-    video_url = upload_video_to_cloudinary(video_stream)
-
-    return video_url
+    return upload_result["url"] # Return url from cloudinary
 
 
 def on_progress(stream, chunk, bytes_remaining):
@@ -158,6 +153,7 @@ def download_video_thread(saved_link, input_resolution):
         try:
             yt_video = YouTube(saved_link, on_progress_callback=on_progress)
 
+            # Check if chosen resolution is available in list of resolutions
             if input_resolution in current_app.combined_resolutions:
                 video_itag = current_app.combined_resolutions[input_resolution][0]
                 
@@ -169,6 +165,7 @@ def download_video_thread(saved_link, input_resolution):
                     except Exception as e:
                         print(f"Failed to delete previous video: {e}")
 
+                # Get url from cloudinary
                 video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
 
                 socketio.emit("video_ready", {
