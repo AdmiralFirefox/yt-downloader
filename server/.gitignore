@@ -1,0 +1,8 @@
+# Virtual environments
+/tube-env
+
+# Pycache
+/__pycache__
+
+# Environmet variables
+.env
