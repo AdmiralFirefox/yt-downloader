@@ -17,9 +17,11 @@ interface ResolutionProps {
   initial_message: string;
 }
 
+const backendUrl = "http://localhost:8000";
+
 const sendInputLink = async (inputLink: string) => {
   const response = await Axios.post(
-    "/api/download_options",
+    `${backendUrl}/api/download_options`,
     { inputLink },
     {
       headers: {
@@ -33,7 +35,7 @@ const sendInputLink = async (inputLink: string) => {
 
 const sendResolution = async (resolution: string, savedLink: string) => {
   const response = await Axios.post(
-    "/api/download_video",
+    `${backendUrl}/api/download_video`,
     { resolution, savedLink },
     {
       headers: {
@@ -97,7 +99,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const socket = io("http://localhost:8000");
+    const socket = io(backendUrl);
 
     socket.on("progress", (data: { percentage: string }) => {
       setProgress(parseInt(data.percentage, 10));
