@@ -1,5 +1,11 @@
+@use "themeprovider/themeprovider" as theme;
+
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+}
+
+body {
+  background: theme.$black-color;
 }
