@@ -1,0 +1,49 @@
+@use "themeprovider/themeprovider" as theme;
+
+.resolutions-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2.5em;
+  gap: 1.4em;
+
+  li {
+    list-style: none;
+    width: min(15em, 85%);
+
+    button {
+      background: theme.$dark-blue-color;
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      gap: 1em;
+      padding: 1em;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.15s ease-in-out;
+
+      p {
+        color: theme.$white-color;
+        font-family: var(--poppins-font);
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background: theme.$light-blue-color;
+      }
+
+      &:disabled {
+        background: theme.$slightly-dark-gray-color;
+        cursor: not-allowed;
+
+        p {
+          color: theme.$dark-gray-color;
+        }
+      }
+    }
+  }
+}

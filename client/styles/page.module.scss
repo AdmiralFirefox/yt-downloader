@@ -1,0 +1,25 @@
+@use "themeprovider/themeprovider" as theme;
+
+.another-video-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 4em;
+
+  button {
+    background: theme.$light-gray-color;
+    color: theme.$white-color;
+    font-family: var(--poppins-font);
+    font-size: 1.1rem;
+    width: min(30em, 85%);
+    padding: 0.75em 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.15s ease-in-out;
+
+    &:hover {
+      background: theme.$lighter-gray-color;
+    }
+  }
+}

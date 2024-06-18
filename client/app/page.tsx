@@ -5,12 +5,14 @@ import { useMutation } from "@tanstack/react-query";
 import Axios from "axios";
 import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
+import FormatList from "./components/FormatList";
 import styles from "@/styles/page.module.scss";
 
 interface InputProps {
   available_resolutions: {
     res: string;
     itag: number;
+    type: string;
   }[];
 }
 
@@ -134,24 +136,20 @@ export default function Home() {
       )}
 
       {savedLink ? (
-        <button onClick={clearInputs}>Download another video</button>
+        <div className={styles["another-video-button-wrapper"]}>
+          <button onClick={clearInputs}>Download another video</button>
+        </div>
       ) : null}
 
       {mutation.isPending && <p>Loading...</p>}
       {mutation.isError && <p>An error occurred.</p>}
       {mutation.isSuccess && mutation.data !== undefined && (
-        <ul>
-          {mutation.data.available_resolutions.map((resolution) => (
-            <li key={resolution.itag}>
-              <button
-                onClick={() => chooseResolution(resolution.res)}
-                disabled={videoProcessing as boolean}
-              >
-                {resolution.res}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <FormatList
+          available_resolutions={mutation.data.available_resolutions}
+          chooseResolution={chooseResolution}
+          videoProcessing={videoProcessing as boolean}
+          resolutionLoading={resolution_mutation.isPending}
+        />
       )}
 
       {resolution_mutation.isPending && <p>Loading...</p>}
