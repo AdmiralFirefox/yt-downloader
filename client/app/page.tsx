@@ -2,8 +2,9 @@
 
 import { FormEvent, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import io from "socket.io-client";
 import Axios from "axios";
+import io from "socket.io-client";
+import FormInputLink from "./components/FormInputLink";
 import styles from "@/styles/page.module.scss";
 
 interface InputProps {
@@ -124,16 +125,12 @@ export default function Home() {
 
   return (
     <main>
-      <h1>Enter Link</h1>
       {savedLink ? null : (
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            value={inputLink}
-            onChange={(e) => setInputLink(e.target.value)}
-          />
-          <button type="submit">Submit</button>
-        </form>
+        <FormInputLink
+          inputLink={inputLink}
+          handleSubmit={handleSubmit}
+          setInputLink={setInputLink}
+        />
       )}
 
       {savedLink ? (
