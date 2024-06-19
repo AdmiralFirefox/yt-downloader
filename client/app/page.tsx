@@ -168,7 +168,7 @@ export default function Home() {
           </div>
         )}
 
-      {progress !== null && (
+      {videoProcessing && progress !== null ? (
         <div className={styles["progress-wrapper"]}>
           <div className={styles["progress-content"]}>
             <Line
@@ -181,7 +181,7 @@ export default function Home() {
             <p>{progress}%</p>
           </div>
         </div>
-      )}
+      ) : null}
 
       <div className={styles["download-ready-wrapper"]}>
         {progress === 100 && readyMessage === null && downloadUrl === null && (
