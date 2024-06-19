@@ -169,7 +169,6 @@ def download_video_thread(saved_link, input_resolution):
                 video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
 
                 socketio.emit("video_ready", {
-                    "message": "Your chosen format is ready to download",
                     "video_url": video_url,
                 })
         except Exception as e:
@@ -178,7 +177,7 @@ def download_video_thread(saved_link, input_resolution):
                 "video_processing": current_app.video_processing
             })
             socketio.emit("video_ready", {
-                "message": f"Error: {str(e)}",
+                "error_message": f"Error: {str(e)}",
                 "video_url": "error",
             })
         

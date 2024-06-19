@@ -56,8 +56,8 @@ export default function Home() {
   const [savedLink, setSavedLink] = useState("");
   const [videoProcessing, setVideoProcessing] = useState<boolean | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
-  const [readyMessage, setReadyMessage] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
     mutationFn: sendInputLink,
@@ -84,7 +84,7 @@ export default function Home() {
     setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
-    setReadyMessage(null);
+    setErrorMessage(null);
     resolution_mutation.mutate({
       resolution: resolution,
       savedLink: savedLink,
@@ -99,7 +99,7 @@ export default function Home() {
     setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
-    setReadyMessage(null);
+    setErrorMessage(null);
   };
 
   useEffect(() => {
@@ -116,10 +116,13 @@ export default function Home() {
       }
     );
 
-    socket.on("video_ready", (data: { message: string; video_url: string }) => {
-      setReadyMessage(data.message);
-      setDownloadUrl(data.video_url);
-    });
+    socket.on(
+      "video_ready",
+      (data: { video_url: string; error_message: string }) => {
+        setErrorMessage(data.error_message);
+        setDownloadUrl(data.video_url);
+      }
+    );
 
     return () => {
       socket.disconnect();
@@ -158,13 +161,16 @@ export default function Home() {
       {resolution_mutation.isSuccess &&
         resolution_mutation.data !== undefined && (
           <div className={styles["processing-format-text"]}>
-            <p>Processing Format...</p>
             <div className={styles["chosen-format-text"]}>
               <p>Chosen Format:</p>
               <p className={styles["format"]}>
                 {resolution_mutation.data.chosen_resolution}
               </p>
             </div>
+
+            {videoProcessing ? (
+              <p>Your chosen format is being processed. Please wait.</p>
+            ) : null}
           </div>
         )}
 
@@ -184,18 +190,23 @@ export default function Home() {
       ) : null}
 
       <div className={styles["download-ready-wrapper"]}>
-        {progress === 100 && readyMessage === null && downloadUrl === null && (
+        {progress === 100 && videoProcessing ? (
           <p>Preparing download link. Please wait.</p>
-        )}
+        ) : null}
 
-        {readyMessage !== null && <p>{readyMessage}</p>}
-
-        {downloadUrl !== null && downloadUrl !== "error" && (
-          <a href={downloadUrl} download>
-            Click here to download
-          </a>
-        )}
+        {downloadUrl !== null && downloadUrl !== "error" ? (
+          <>
+            <p>Your chosen format is now ready to download.</p>
+            <a href={downloadUrl} download>
+              Click here to download
+            </a>
+          </>
+        ) : null}
       </div>
+
+      {errorMessage !== null && downloadUrl === "error" ? (
+        <p>{errorMessage}</p>
+      ) : null}
     </main>
   );
 }
