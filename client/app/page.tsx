@@ -183,17 +183,19 @@ export default function Home() {
         </div>
       )}
 
-      {progress === 100 && readyMessage === null && downloadUrl === null && (
-        <p>Preparing download link. Please wait.</p>
-      )}
+      <div className={styles["download-ready-wrapper"]}>
+        {progress === 100 && readyMessage === null && downloadUrl === null && (
+          <p>Preparing download link. Please wait.</p>
+        )}
 
-      {readyMessage !== null && <p>{readyMessage}</p>}
+        {readyMessage !== null && <p>{readyMessage}</p>}
 
-      {downloadUrl !== null && downloadUrl !== "error" && (
-        <a href={downloadUrl} download>
-          Click here to download
-        </a>
-      )}
+        {downloadUrl !== null && downloadUrl !== "error" && (
+          <a href={downloadUrl} download>
+            Click here to download
+          </a>
+        )}
+      </div>
     </main>
   );
 }

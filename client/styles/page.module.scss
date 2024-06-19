@@ -71,7 +71,38 @@
       font-weight: 600;
       text-align: center;
       margin-top: 0.8em;
-      text-align: center;
+    }
+  }
+}
+
+.download-ready-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2em;
+  margin: 2.7em 1.25em 0em 1.25em;
+
+  p {
+    color: theme.$white-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  a {
+    text-decoration: none;
+    background: theme.$green-color;
+    color: theme.$white-color;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 0.7em 1em;
+    border-radius: 7px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s ease-in-out;
+
+    &:hover {
+      background: theme.$lighter-green-color;
     }
   }
 }
