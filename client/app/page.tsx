@@ -6,6 +6,7 @@ import Axios from "axios";
 import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
 import FormatList from "./components/FormatList";
+import { Line } from "rc-progress";
 import styles from "@/styles/page.module.scss";
 
 interface InputProps {
@@ -17,7 +18,7 @@ interface InputProps {
 }
 
 interface ResolutionProps {
-  initial_message: string;
+  chosen_resolution: string;
 }
 
 const backendUrl = "http://localhost:8000";
@@ -156,14 +157,29 @@ export default function Home() {
       {resolution_mutation.isError && <p>An error occurred.</p>}
       {resolution_mutation.isSuccess &&
         resolution_mutation.data !== undefined && (
-          <div>
-            <p>{resolution_mutation.data.initial_message}</p>
+          <div className={styles["processing-format-text"]}>
+            <p>Processing Format...</p>
+            <div className={styles["chosen-format-text"]}>
+              <p>Chosen Format:</p>
+              <p className={styles["format"]}>
+                {resolution_mutation.data.chosen_resolution}
+              </p>
+            </div>
           </div>
         )}
 
       {progress !== null && (
-        <div>
-          <p>Download Progress: {progress}%</p>
+        <div className={styles["progress-wrapper"]}>
+          <div className={styles["progress-content"]}>
+            <Line
+              percent={progress}
+              strokeWidth={3.6}
+              trailWidth={3.6}
+              strokeColor="#55A3DD"
+              trailColor="#636a83"
+            />
+            <p>{progress}%</p>
+          </div>
         </div>
       )}
 

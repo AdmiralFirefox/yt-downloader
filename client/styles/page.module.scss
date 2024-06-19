@@ -23,3 +23,55 @@
     }
   }
 }
+
+.processing-format-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2.5em 1.25em 0em 1.25em;
+  line-height: 2.1em;
+
+  p {
+    color: theme.$white-color;
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .chosen-format-text {
+    margin-top: 0.8em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5em;
+
+    .format {
+      background: theme.$dark-blue-color;
+      padding: 0.2em 0.6em;
+      border-radius: 7px;
+    }
+  }
+}
+
+.progress-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 3em;
+
+  .progress-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(25em, 85%);
+
+    p {
+      color: theme.$white-color;
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0.8em;
+      text-align: center;
+    }
+  }
+}

@@ -201,7 +201,7 @@ def download_video():
     threading.Thread(target=download_video_thread, args=(saved_link, input_resolution)).start()
 
     return jsonify({
-        "initial_message": "Video download has started, you will be notified when it is ready."
+        "chosen_resolution": input_resolution,
     })
 
 
