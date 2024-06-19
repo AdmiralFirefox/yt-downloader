@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
 import Header from "./components/Header";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "@/styles/globals.scss";
 
 const poppins = Poppins({
@@ -25,6 +27,7 @@ export default function RootLayout({
       <body className={poppins.className}>
         <QueryProvider>
           <Header />
+          <ToastContainer limit={1} />
           {children}
         </QueryProvider>
       </body>

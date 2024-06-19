@@ -7,6 +7,7 @@ import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
 import FormatList from "./components/FormatList";
 import { Line } from "rc-progress";
+import { Bounce, toast } from "react-toastify";
 import styles from "@/styles/page.module.scss";
 
 interface InputProps {
@@ -75,9 +76,24 @@ export default function Home() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    mutation.mutate(inputLink);
-    setSavedLink(inputLink);
-    setInputLink("");
+
+    if (inputLink.includes("https://") && inputLink !== "") {
+      mutation.mutate(inputLink);
+      setSavedLink(inputLink);
+      setInputLink("");
+    } else {
+      toast.error("Enter a valid url", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+    }
   };
 
   const chooseResolution = (resolution: string) => {
