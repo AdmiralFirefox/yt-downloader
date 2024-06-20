@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, current_app, send_from_directory
+from flask import Flask, jsonify, request, current_app
 from flask_socketio import SocketIO
 from flask_cors import CORS
 from pytube import YouTube
