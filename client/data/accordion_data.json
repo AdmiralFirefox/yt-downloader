@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "title": "What is YT Media Downloader?",
+    "description": "YT Media Downloader allows you to download videos from YouTube."
+  },
+  {
+    "id": 2,
+    "title": "How to use?",
+    "description": "Copy the URL of a YouTube video and paste it in the textbox and click convert. Then, choose any format that you want to download. After clicking your chosen format, wait for the download url to be generated and click download."
+  },
+  {
+    "id": 3,
+    "title": "I'm getting an Error! Help!",
+    "description": "If you're getting an error, just refresh the page and try again. Make sure you have a stable internet connection or your copied url is valid."
+  },
+  {
+    "id": 4,
+    "title": "Limits",
+    "description": "Currently, the YT Media Downloader has a limit on the download size of the video, especially when the video is long and has higher quality."
+  }
+]

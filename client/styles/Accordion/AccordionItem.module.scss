@@ -1,0 +1,65 @@
+@use "../themeprovider/themeprovider" as theme;
+
+.accordion-item {
+  list-style: none;
+  margin-bottom: 1.5em;
+
+  // Accordion Header
+  .accordion-header {
+    background: theme.$light-black-color;
+    color: theme.$white-color;
+    width: 100%;
+    font-size: 1.2rem;
+    line-height: 1.5em;
+    font-weight: 600;
+    text-align: left;
+    border: none;
+    border-radius: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.7em;
+    padding: 1.5em;
+    font-family: var(--poppins-font);
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+    }
+
+    // Accordion Icon
+    .accordion-icon {
+      font-size: 2rem;
+      color: theme.$white-color;
+      transform: rotate(-360deg);
+      transition: transform 0.4s ease-in-out;
+    }
+
+    // Accordion Icon Active
+    .accordion-icon-active {
+      font-size: 2rem;
+      color: theme.$white-color;
+      transform: rotate(-180deg);
+      transition: transform 0.4s ease-in-out;
+    }
+  }
+
+  .accordion-content-wrapper {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.4s ease-in-out; // Transition Animation
+
+    // Accordion Content
+    .accordion-content {
+      background-color: theme.$light-black-color;
+      padding: 0em 1.5em 1.5em 1.7em;
+
+      p {
+        color: theme.$white-color;
+        font-size: 1.1rem;
+        font-weight: 400;
+        line-height: 1.4em;
+      }
+    }
+  }
+}

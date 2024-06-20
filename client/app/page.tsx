@@ -6,6 +6,7 @@ import Axios from "axios";
 import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
 import FormatList from "./components/FormatList";
+import Accordion from "./components/Accordion/Accordion";
 import Loading from "./components/States/Loading";
 import Error from "./components/States/Error";
 import { Line } from "rc-progress";
@@ -233,6 +234,8 @@ export default function Home() {
       {errorMessage !== null && downloadUrl === "error" ? (
         <Error errorMessage={errorMessage} />
       ) : null}
+
+      <Accordion />
     </main>
   );
 }
