@@ -6,6 +6,8 @@ import Axios from "axios";
 import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
 import FormatList from "./components/FormatList";
+import Loading from "./components/States/Loading";
+import Error from "./components/States/Error";
 import { Line } from "rc-progress";
 import { Bounce, toast } from "react-toastify";
 import styles from "@/styles/page.module.scss";
@@ -161,8 +163,12 @@ export default function Home() {
         </div>
       ) : null}
 
-      {mutation.isPending && <p>Loading...</p>}
-      {mutation.isError && <p>An error occurred.</p>}
+      {mutation.isPending && (
+        <Loading loadingMessage="Loading available formats" />
+      )}
+      {mutation.isError && (
+        <Error errorMessage="Something went wrong. Make sure you have a valid url entered and have a stable internet connection. Refresh the page and try again." />
+      )}
       {mutation.isSuccess && mutation.data !== undefined && (
         <FormatList
           available_resolutions={mutation.data.available_resolutions}
@@ -172,8 +178,12 @@ export default function Home() {
         />
       )}
 
-      {resolution_mutation.isPending && <p>Loading...</p>}
-      {resolution_mutation.isError && <p>An error occurred.</p>}
+      {resolution_mutation.isPending && (
+        <Loading loadingMessage="Preparing Format" />
+      )}
+      {resolution_mutation.isError && (
+        <Error errorMessage="Something went wrong. Refresh the page and try again." />
+      )}
       {resolution_mutation.isSuccess &&
         resolution_mutation.data !== undefined && (
           <div className={styles["processing-format-text"]}>
@@ -183,12 +193,12 @@ export default function Home() {
                 {resolution_mutation.data.chosen_resolution}
               </p>
             </div>
-
-            {videoProcessing ? (
-              <p>Your chosen format is being processed. Please wait.</p>
-            ) : null}
           </div>
         )}
+
+      {videoProcessing && progress === null ? (
+        <Loading loadingMessage="Your chosen format is being processed. Please wait." />
+      ) : null}
 
       {videoProcessing && progress !== null ? (
         <div className={styles["progress-wrapper"]}>
@@ -205,11 +215,11 @@ export default function Home() {
         </div>
       ) : null}
 
-      <div className={styles["download-ready-wrapper"]}>
-        {progress === 100 && videoProcessing ? (
-          <p>Preparing download link. Please wait.</p>
-        ) : null}
+      {progress === 100 && videoProcessing ? (
+        <Loading loadingMessage="Preparing download link. Please wait." />
+      ) : null}
 
+      <div className={styles["download-ready-wrapper"]}>
         {downloadUrl !== null && downloadUrl !== "error" ? (
           <>
             <p>Your chosen format is now ready to download.</p>
@@ -221,7 +231,7 @@ export default function Home() {
       </div>
 
       {errorMessage !== null && downloadUrl === "error" ? (
-        <p>{errorMessage}</p>
+        <Error errorMessage={errorMessage} />
       ) : null}
     </main>
   );

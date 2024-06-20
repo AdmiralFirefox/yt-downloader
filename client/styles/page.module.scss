@@ -32,20 +32,19 @@
   gap: 1.3em;
   line-height: 2.1em;
 
-  // Applies to all p
-  p {
-    color: theme.$white-color;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-align: center;
-  }
-
   .chosen-format-text {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
     gap: 0.5em;
+
+    p {
+      color: theme.$white-color;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+    }
 
     .format {
       background: theme.$dark-blue-color;
