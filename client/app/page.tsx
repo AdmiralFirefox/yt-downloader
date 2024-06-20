@@ -84,6 +84,7 @@ export default function Home() {
       mutation.mutate(inputLink);
       setSavedLink(inputLink);
       setInputLink("");
+      setDownloadUrl(null);
     } else {
       toast.error("Enter a valid url", {
         position: "top-center",
@@ -221,7 +222,7 @@ export default function Home() {
       ) : null}
 
       <div className={styles["download-ready-wrapper"]}>
-        {downloadUrl !== null && downloadUrl !== "error" ? (
+        {downloadUrl !== null && downloadUrl !== "error" && savedLink !== "" ? (
           <>
             <p>Your chosen format is now ready to download.</p>
             <a href={downloadUrl} download>
