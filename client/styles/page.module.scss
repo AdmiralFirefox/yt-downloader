@@ -106,3 +106,20 @@
     }
   }
 }
+
+.legal-note-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 7em;
+
+  .legal-note-content {
+    width: min(55em, 85%);
+
+    p {
+      text-align: center;
+      color: theme.$slightly-white-color;
+      font-size: 0.9rem;
+      line-height: 1.7em;
+    }
+  }
+}

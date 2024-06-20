@@ -236,6 +236,19 @@ export default function Home() {
       ) : null}
 
       <Accordion />
+
+      <div className={styles["legal-note-wrapper"]}>
+        <div className={styles["legal-note-content"]}>
+          <p>Legal Note:</p>
+          <p>
+            It is essential that downloading videos for personal enjoyment is
+            typically allowed, but it&apos;s crucial to respect copyright and
+            intellectual property laws. It&apos;s important to ensure that
+            downloaded videos are only for personal use and not shared or
+            distributed without permission.
+          </p>
+        </div>
+      </div>
     </main>
   );
 }
