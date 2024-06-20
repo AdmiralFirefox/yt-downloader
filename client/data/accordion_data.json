@@ -17,6 +17,6 @@
   {
     "id": 4,
     "title": "Limits",
-    "description": "Currently, the YT Media Downloader has a limit on the download size of the video, especially when the video is long and has higher quality."
+    "description": "YT Media Downloader has a limit on the download size of the video, especially when the video is long and has higher quality. It also doesn't allow you to download age restricted videos."
   }
 ]
