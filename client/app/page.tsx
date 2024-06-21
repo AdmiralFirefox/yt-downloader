@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import Axios from "axios";
 import io from "socket.io-client";
 import FormInputLink from "./components/FormInputLink";
+import VideoInfo from "./components/VideoInfo";
 import FormatList from "./components/FormatList";
 import Accordion from "./components/Accordion/Accordion";
 import Loading from "./components/States/Loading";
@@ -19,6 +20,9 @@ interface InputProps {
     itag: number;
     type: string;
   }[];
+  thumbnail_url: string;
+  video_title: string;
+  video_length: number;
 }
 
 interface ResolutionProps {
@@ -168,16 +172,25 @@ export default function Home() {
       {mutation.isPending && (
         <Loading loadingMessage="Loading available formats" />
       )}
+
       {mutation.isError && (
         <Error errorMessage="Something went wrong. Make sure you have a valid url entered and have a stable internet connection. Also, make sure that the video is not age restricted. Refresh the page and try again." />
       )}
+
       {mutation.isSuccess && mutation.data !== undefined && (
-        <FormatList
-          available_resolutions={mutation.data.available_resolutions}
-          chooseResolution={chooseResolution}
-          videoProcessing={videoProcessing as boolean}
-          resolutionLoading={resolution_mutation.isPending}
-        />
+        <>
+          <VideoInfo
+            thumbnail_url={mutation.data.thumbnail_url}
+            video_title={mutation.data.video_title}
+            video_length={mutation.data.video_length}
+          />
+          <FormatList
+            available_resolutions={mutation.data.available_resolutions}
+            chooseResolution={chooseResolution}
+            videoProcessing={videoProcessing as boolean}
+            resolutionLoading={resolution_mutation.isPending}
+          />
+        </>
       )}
 
       {resolution_mutation.isPending && (

@@ -140,6 +140,9 @@ def download_options():
 
     return jsonify({
         "available_resolutions": available_resolutions_list,
+        "thumbnail_url": yt_video.thumbnail_url,
+        "video_title": yt_video.title,
+        "video_length": yt_video.length
     })
 
 
