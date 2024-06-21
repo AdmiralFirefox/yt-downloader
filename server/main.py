@@ -173,6 +173,7 @@ def download_video_thread(saved_link, input_resolution):
 
                 socketio.emit("video_ready", {
                     "video_url": video_url,
+                    "video_filesize": yt_video.streams.get_by_itag(video_itag).filesize
                 })
         except Exception as e:
             current_app.video_processing = False

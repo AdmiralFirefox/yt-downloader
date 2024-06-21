@@ -12,6 +12,7 @@ import Loading from "./components/States/Loading";
 import Error from "./components/States/Error";
 import { Line } from "rc-progress";
 import { Bounce, toast } from "react-toastify";
+import { bytesToSize } from "@/utils/bytesToSize";
 import styles from "@/styles/page.module.scss";
 
 interface InputProps {
@@ -65,6 +66,7 @@ export default function Home() {
   const [videoProcessing, setVideoProcessing] = useState<boolean | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
@@ -89,6 +91,7 @@ export default function Home() {
       setSavedLink(inputLink);
       setInputLink("");
       setDownloadUrl(null);
+      setFileSize(null);
     } else {
       toast.error("Enter a valid url", {
         position: "top-center",
@@ -108,6 +111,7 @@ export default function Home() {
     setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
+    setFileSize(null);
     setErrorMessage(null);
     resolution_mutation.mutate({
       resolution: resolution,
@@ -123,6 +127,7 @@ export default function Home() {
     setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
+    setFileSize(null);
     setErrorMessage(null);
   };
 
@@ -142,9 +147,14 @@ export default function Home() {
 
     socket.on(
       "video_ready",
-      (data: { video_url: string; error_message: string }) => {
+      (data: {
+        video_url: string;
+        video_filesize: number;
+        error_message: string;
+      }) => {
         setErrorMessage(data.error_message);
         setDownloadUrl(data.video_url);
+        setFileSize(data.video_filesize);
       }
     );
 
@@ -241,6 +251,7 @@ export default function Home() {
             <a href={downloadUrl} download>
               Click here to download
             </a>
+            <p>{bytesToSize(fileSize)}</p>
           </>
         ) : null}
       </div>
