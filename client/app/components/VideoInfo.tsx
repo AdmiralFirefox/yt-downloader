@@ -12,7 +12,7 @@ const VideoInfo = ({
   video_title,
   video_length,
 }: VideoInfoProps) => {
-  function convertTime(d: number) {
+  const convertTime = (d: number) => {
     d = Number(d);
     var h = Math.floor(d / 3600);
     var m = Math.floor((d % 3600) / 60);
@@ -22,7 +22,7 @@ const VideoInfo = ({
     var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
     var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
     return hDisplay + mDisplay + sDisplay;
-  }
+  };
 
   return (
     <div className={styles["video-info-wrapper"]}>
