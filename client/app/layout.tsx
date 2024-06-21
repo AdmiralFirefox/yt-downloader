@@ -14,7 +14,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "YT Media Downloader",
-  description: "Download videos on YouTube",
+  description:
+    "A convenient way to download videos on YouTube and saving them to your device while offering various download formats.",
 };
 
 export default function RootLayout({
