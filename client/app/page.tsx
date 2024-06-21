@@ -169,7 +169,7 @@ export default function Home() {
         <Loading loadingMessage="Loading available formats" />
       )}
       {mutation.isError && (
-        <Error errorMessage="Something went wrong. Make sure you have a valid url entered and have a stable internet connection. Refresh the page and try again." />
+        <Error errorMessage="Something went wrong. Make sure you have a valid url entered and have a stable internet connection. Also, make sure that the video is not age restricted. Refresh the page and try again." />
       )}
       {mutation.isSuccess && mutation.data !== undefined && (
         <FormatList
