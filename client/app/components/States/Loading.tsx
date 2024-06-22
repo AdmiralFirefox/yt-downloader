@@ -1,5 +1,5 @@
 import SyncLoader from "react-spinners/SyncLoader";
-import styles from "@/styles/states/Loading.module.scss";
+import styles from "@/styles/States/Loading.module.scss";
 
 interface LoadingProps {
   loadingMessage: string;

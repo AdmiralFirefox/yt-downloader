@@ -1,5 +1,5 @@
 import ErrorIcon from "../Icons/ErrorIcon";
-import styles from "@/styles/states/Error.module.scss";
+import styles from "@/styles/States/Error.module.scss";
 
 interface ErrorProps {
   errorMessage: string;
