@@ -1,0 +1,14 @@
+services:
+  # flask service
+  backend:
+    container_name: yt_downloader_backend
+    image: yt_downloader_backend:1.0.0
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - CLOUDINARY_API_KEY=API_KEY
+      - CLOUDINARY_API_SECRET=API_SECRET
+      - CLOUDINARY_CLOUD_NAME=CLOUD_NAME
+    ports:
+      - 8000:8000
