@@ -30,7 +30,9 @@ interface ResolutionProps {
   chosen_resolution: string;
 }
 
-const backendUrl = "http://localhost:8000";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+  ? process.env.NEXT_PUBLIC_BACKEND_URL
+  : "http://localhost:8000";
 
 const sendInputLink = async (inputLink: string) => {
   const response = await Axios.post(
