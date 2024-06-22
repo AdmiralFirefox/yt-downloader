@@ -25,9 +25,9 @@ app = Flask(__name__)
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-VIDEO_FOLDER = "/tmp/downloaded_yt_video"
+VIDEO_FOLDER = "downloaded_yt_video"
 
-# Check if the upload folder exists in /tmp and create it if it doesn't
+# Check if the upload folder exists in /downloaded_yt_video and create it if it doesn't
 if not os.path.exists(VIDEO_FOLDER):
     os.makedirs(VIDEO_FOLDER)
 else:
