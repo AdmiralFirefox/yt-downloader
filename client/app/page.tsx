@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect, useRef } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Axios from "axios";
 import io from "socket.io-client";
@@ -72,8 +72,6 @@ export default function Home() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const downloadRef = useRef<HTMLAnchorElement>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
     mutationFn: sendInputLink,
@@ -178,13 +176,6 @@ export default function Home() {
     }
   }, [sessionId]);
 
-  // Trigger Automatic Download
-  useEffect(() => {
-    if (downloadUrl !== null && downloadUrl !== "error" && savedLink !== "") {
-      downloadRef.current?.click();
-    }
-  }, [downloadUrl, savedLink]);
-
   return (
     <main>
       {savedLink ? null : (
@@ -269,8 +260,8 @@ export default function Home() {
       <div className={styles["download-ready-wrapper"]}>
         {downloadUrl !== null && downloadUrl !== "error" && savedLink !== "" ? (
           <>
-            <p>Your download should start automatically. If it doesn&apos;t,</p>
-            <a href={downloadUrl} ref={downloadRef} download>
+            <p>Your chosen format is now ready to download.</p>
+            <a href={downloadUrl} download>
               Click here to download
             </a>
             <p>{bytesToSize(fileSize)}</p>
