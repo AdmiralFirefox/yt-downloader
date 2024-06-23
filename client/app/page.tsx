@@ -4,6 +4,7 @@ import { FormEvent, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Axios from "axios";
 import io from "socket.io-client";
+import { saveAs } from "file-saver";
 import FormInputLink from "./components/FormInputLink";
 import VideoInfo from "./components/VideoInfo";
 import FormatList from "./components/FormatList";
@@ -176,6 +177,39 @@ export default function Home() {
     }
   }, [sessionId]);
 
+  // Trigger Automatic Download
+  useEffect(() => {
+    const downloadFile = async () => {
+      try {
+        if (
+          downloadUrl !== null &&
+          downloadUrl !== "error" &&
+          savedLink !== ""
+        ) {
+          const response = await fetch(downloadUrl);
+          const blob = await response.blob();
+
+          const fileName =
+            mutation.data !== undefined
+              ? mutation.data.video_title
+              : "yt_downloader";
+          const filePrefix =
+            blob.type === "video/mp4"
+              ? ".mp4"
+              : blob.type === "video/webm"
+              ? ".webm"
+              : ".mp4";
+
+          saveAs(blob, `${fileName}${filePrefix}`);
+        }
+      } catch (error) {
+        console.error("Download failed:", error);
+      }
+    };
+
+    downloadFile();
+  }, [downloadUrl, mutation.data, savedLink]);
+
   return (
     <main>
       {savedLink ? null : (
@@ -260,7 +294,7 @@ export default function Home() {
       <div className={styles["download-ready-wrapper"]}>
         {downloadUrl !== null && downloadUrl !== "error" && savedLink !== "" ? (
           <>
-            <p>Your chosen format is now ready to download.</p>
+            <p>Your download should start automatically. If it doesn&apos;t,</p>
             <a href={downloadUrl} download>
               Click here to download
             </a>
