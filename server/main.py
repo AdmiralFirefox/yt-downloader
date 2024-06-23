@@ -80,7 +80,7 @@ def process_video(video_stream):
 
     # Clean filename title for public_id (Remove emojis)
     emoji_pattern = r"[^\w\s_-]"
-    cleaned_title = re.sub(emoji_pattern, "", filename[0])   
+    cleaned_title = re.sub(emoji_pattern, "", filename[0]).strip()
 
     # Upload video to cloudinary
     upload_result = uploader.upload_large(file_path,
