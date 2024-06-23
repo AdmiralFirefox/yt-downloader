@@ -186,7 +186,12 @@ export default function Home() {
           downloadUrl !== "error" &&
           savedLink !== ""
         ) {
-          const response = await fetch(downloadUrl);
+          // Ensure downloadUrl is HTTPS
+          const httpsDownloadUrl = downloadUrl.startsWith("http://")
+            ? downloadUrl.replace("http://", "https://")
+            : downloadUrl;
+
+          const response = await fetch(httpsDownloadUrl);
           const blob = await response.blob();
 
           const fileName =
