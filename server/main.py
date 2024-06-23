@@ -40,7 +40,6 @@ with app.app_context():
     current_app.video_resolutions = OrderedDict()
     current_app.audio_resolutions = OrderedDict()
     current_app.combined_resolutions = OrderedDict()
-    current_app.previous_video_public_id = None
 
 
 def delete_all_files():
@@ -88,7 +87,8 @@ def process_video(video_stream):
                                     public_id=cleaned_title,
                                     resource_type="video")
     
-    current_app.previous_video_public_id = upload_result["public_id"]
+    app.config["PREVIOUS_VIDEO_PUBLIC_ID"] = upload_result["public_id"]
+    app.config["PREVIOUS_VIDEO_RESOURCE_TYPE"] = upload_result["resource_type"]
     return upload_result["url"] # Return url from cloudinary
 
 
@@ -160,10 +160,11 @@ def download_video_thread(saved_link, input_resolution):
                 video_itag = current_app.combined_resolutions[input_resolution][0]
                 
                 # Delete the previous video if it exists
-                previous_video_public_id = current_app.previous_video_public_id
+                previous_video_public_id = app.config.get("PREVIOUS_VIDEO_PUBLIC_ID")
+                previous_video_resource_type = app.config.get("PREVIOUS_VIDEO_RESOURCE_TYPE")
                 if previous_video_public_id:
                     try:
-                        uploader.destroy(previous_video_public_id, resource_type="video")
+                        uploader.destroy(previous_video_public_id, resource_type=previous_video_resource_type)
                     except Exception as e:
                         print(f"Failed to delete previous video: {e}")
 
