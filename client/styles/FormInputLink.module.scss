@@ -16,6 +16,8 @@
     border-radius: 7px;
 
     input {
+      border: none;
+      outline: none;
       background: theme.$white-color;
       color: theme.$black-color;
       font-family: var(--poppins-font);
