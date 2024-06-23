@@ -28,6 +28,7 @@ interface InputProps {
 
 interface ResolutionProps {
   chosen_resolution: string;
+  session_id: string;
 }
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -65,6 +66,7 @@ const sendResolution = async (resolution: string, savedLink: string) => {
 export default function Home() {
   const [inputLink, setInputLink] = useState("");
   const [savedLink, setSavedLink] = useState("");
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [videoProcessing, setVideoProcessing] = useState<boolean | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
@@ -83,6 +85,9 @@ export default function Home() {
   >({
     mutationFn: ({ resolution, savedLink }) =>
       sendResolution(resolution, savedLink),
+    onSuccess: (data) => {
+      setSessionId(data.session_id);
+    },
   });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -134,36 +139,42 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const socket = io(backendUrl);
+    if (sessionId) {
+      setVideoProcessing(true);
 
-    socket.on("progress", (data: { percentage: string }) => {
-      setProgress(parseInt(data.percentage, 10));
-    });
+      const socket = io(backendUrl, {
+        query: { sessionId: sessionId },
+      });
 
-    socket.on(
-      "video_processing_status",
-      (data: { video_processing: boolean }) => {
-        setVideoProcessing(data.video_processing);
-      }
-    );
+      socket.on("progress", (data: { percentage: string }) => {
+        setProgress(parseInt(data.percentage, 10));
+      });
 
-    socket.on(
-      "video_ready",
-      (data: {
-        video_url: string;
-        video_filesize: number;
-        error_message: string;
-      }) => {
-        setErrorMessage(data.error_message);
-        setDownloadUrl(data.video_url);
-        setFileSize(data.video_filesize);
-      }
-    );
+      socket.on(
+        "video_processing_status",
+        (data: { video_processing: boolean }) => {
+          setVideoProcessing(data.video_processing);
+        }
+      );
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+      socket.on(
+        "video_ready",
+        (data: {
+          video_url: string;
+          video_filesize: number;
+          error_message: string;
+        }) => {
+          setErrorMessage(data.error_message);
+          setDownloadUrl(data.video_url);
+          setFileSize(data.video_filesize);
+        }
+      );
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [sessionId]);
 
   return (
     <main>

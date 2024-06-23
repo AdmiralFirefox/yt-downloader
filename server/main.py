@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request, current_app
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room, leave_room
 from flask_cors import CORS
 from pytube import YouTube
 from collections import OrderedDict
 from cloudinary import uploader, config
 from dotenv import load_dotenv
-import threading
 import shutil
+import uuid
 import os
 import re
 
@@ -22,6 +22,7 @@ config(
 
 # App instance
 app = Flask(__name__)
+app.secret_key = os.getenv("APP_SECRET_KEY")
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -39,7 +40,6 @@ with app.app_context():
     current_app.video_resolutions = OrderedDict()
     current_app.audio_resolutions = OrderedDict()
     current_app.combined_resolutions = OrderedDict()
-    current_app.video_processing = False
     current_app.previous_video_public_id = None
 
 
@@ -97,7 +97,9 @@ def on_progress(stream, chunk, bytes_remaining):
     bytes_downloaded = total_size - bytes_remaining
     percentage_of_completion = bytes_downloaded / total_size * 100
     int_percentage = str(int(percentage_of_completion))
-    socketio.emit("progress", {"percentage": int_percentage})
+
+    session_id = app.config.get("SESSION_ID")
+    socketio.emit("progress", {"percentage": int_percentage}, room=session_id)
 
 
 @app.route("/api/download_options", methods=["POST"])
@@ -148,10 +150,7 @@ def download_options():
 
 def download_video_thread(saved_link, input_resolution):
     with app.app_context():
-        current_app.video_processing = True
-        socketio.emit("video_processing_status", {
-            "video_processing": current_app.video_processing
-        })
+        session_id = app.config.get("SESSION_ID")
 
         try:
             yt_video = YouTube(saved_link, on_progress_callback=on_progress)
@@ -174,21 +173,16 @@ def download_video_thread(saved_link, input_resolution):
                 socketio.emit("video_ready", {
                     "video_url": video_url,
                     "video_filesize": yt_video.streams.get_by_itag(video_itag).filesize
-                })
+                }, room=session_id)
         except Exception as e:
-            current_app.video_processing = False
-            socketio.emit("video_processing_status", {
-                "video_processing": current_app.video_processing
-            })
             socketio.emit("video_ready", {
                 "error_message": f"Error: {str(e)}",
                 "video_url": "error",
-            })
-        
-        current_app.video_processing = False
-        socketio.emit("video_processing_status", {
-            "video_processing": current_app.video_processing
-        })
+            }, room=session_id)
+        finally:
+            socketio.emit("video_processing_status", {
+                "video_processing": False
+            }, room=session_id)
 
 
 @app.route("/api/download_video", methods=["POST"])
@@ -200,12 +194,29 @@ def download_video():
     input_resolution = data.get("resolution")
     saved_link = data.get("savedLink")
 
+    # Generate a unique session ID
+    session_id = str(uuid.uuid4())
+    app.config["SESSION_ID"] = session_id
+
     # Start a new thread to handle the video download
-    threading.Thread(target=download_video_thread, args=(saved_link, input_resolution)).start()
+    socketio.start_background_task(download_video_thread, saved_link, input_resolution)
 
     return jsonify({
         "chosen_resolution": input_resolution,
+        "session_id": session_id,
     })
+
+
+@socketio.on("connect")
+def handle_connect():
+    session_id = request.args.get("sessionId")
+    join_room(session_id)
+
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    session_id = request.args.get("sessionId")
+    leave_room(session_id)
 
 
 if __name__ == "__main__":
