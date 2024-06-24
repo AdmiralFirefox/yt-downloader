@@ -37,8 +37,8 @@ const VideoInfo = ({
           unoptimized
         />
       </div>
-      <p>{video_title}</p>
-      <p>Length: {convertTime(video_length)}</p>
+      <p className={styles["video-title"]}>{video_title}</p>
+      <p className={styles["video-duration"]}>Duration: {convertTime(video_length)}</p>
     </div>
   );
 };

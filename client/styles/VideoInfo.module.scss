@@ -1,5 +1,12 @@
 @use "themeprovider/themeprovider" as theme;
 
+@mixin video-info-text() {
+  font-size: 1.15rem;
+  font-weight: 500;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 .video-info-wrapper {
   display: flex;
   flex-direction: column;
@@ -16,19 +23,15 @@
     }
   }
 
-  p {
-    font-size: 1.15rem;
-    font-weight: 500;
-    text-align: center;
-    overflow-wrap: anywhere;
+  .video-title {
+    @include video-info-text();
+    margin-top: 0.8em;
+    width: min(35em, 100%);
+  }
 
-    &:first-of-type {
-      margin-top: 0.8em;
-      width: min(35em, 100%);
-    }
-
-    &:last-of-type {
-      margin-top: 0.4em;
-    }
+  .video-duration {
+    @include video-info-text();
+    margin-top: 0.4em;
+    width: 100%;
   }
 }
