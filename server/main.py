@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, current_app
 from flask_socketio import SocketIO, join_room, leave_room
 from flask_cors import CORS
-from pytube import YouTube
+from pytubefix import YouTube
 from collections import OrderedDict
 from cloudinary import uploader, config
 from dotenv import load_dotenv

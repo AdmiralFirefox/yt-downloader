@@ -2,7 +2,7 @@ services:
   # flask service
   backend:
     container_name: yt_downloader_backend
-    image: yt_downloader_backend:1.0.0
+    image: yt_downloader_backend:1.1.0
     build:
       context: .
       dockerfile: Dockerfile
