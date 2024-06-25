@@ -21,6 +21,7 @@ interface InputProps {
     res: string;
     itag: number;
     type: string;
+    progressive: string;
   }[];
   thumbnail_url: string;
   video_title: string;
@@ -28,7 +29,7 @@ interface InputProps {
 }
 
 interface ResolutionProps {
-  chosen_resolution: string;
+  resolution_index: number;
   session_id: string;
 }
 
@@ -50,10 +51,10 @@ const sendInputLink = async (inputLink: string) => {
   return response.data;
 };
 
-const sendResolution = async (resolution: string, savedLink: string) => {
+const sendResolution = async (resolutionIndex: number, savedLink: string) => {
   const response = await Axios.post(
     `${backendUrl}/api/download_video`,
-    { resolution, savedLink },
+    { resolutionIndex, savedLink },
     {
       headers: {
         "Content-Type": "application/json",
@@ -82,10 +83,10 @@ export default function Home() {
   const resolution_mutation = useMutation<
     ResolutionProps,
     Error,
-    { resolution: string; savedLink: string }
+    { resolutionIndex: number; savedLink: string }
   >({
-    mutationFn: ({ resolution, savedLink }) =>
-      sendResolution(resolution, savedLink),
+    mutationFn: ({ resolutionIndex, savedLink }) =>
+      sendResolution(resolutionIndex, savedLink),
     onSuccess: (data) => {
       setSessionId(data.session_id);
     },
@@ -115,14 +116,14 @@ export default function Home() {
     }
   };
 
-  const chooseResolution = (resolution: string) => {
+  const chooseResolution = (resolutionIndex: number) => {
     setVideoProcessing(null);
     setProgress(null);
     setDownloadUrl(null);
     setFileSize(null);
     setErrorMessage(null);
     resolution_mutation.mutate({
-      resolution: resolution,
+      resolutionIndex: resolutionIndex,
       savedLink: savedLink,
     });
   };
@@ -267,7 +268,10 @@ export default function Home() {
             <div className={styles["chosen-format-text"]}>
               <p>Chosen Format:</p>
               <p className={styles["format"]}>
-                {resolution_mutation.data.chosen_resolution}
+                {mutation.data !== undefined &&
+                  mutation.data.available_resolutions[
+                    resolution_mutation.data.resolution_index
+                  ].res}
               </p>
             </div>
           </div>

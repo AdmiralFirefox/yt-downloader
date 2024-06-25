@@ -37,6 +37,7 @@ else:
 
 # Initialize the application context
 with app.app_context():
+    current_app.progressive_resolutions = OrderedDict()
     current_app.video_resolutions = OrderedDict()
     current_app.audio_resolutions = OrderedDict()
     current_app.combined_resolutions = OrderedDict()
@@ -108,6 +109,7 @@ def download_options():
     delete_all_files()
 
     # Clear dictionaries
+    current_app.progressive_resolutions.clear()
     current_app.video_resolutions.clear()
     current_app.audio_resolutions.clear()
     current_app.combined_resolutions.clear()
@@ -119,24 +121,34 @@ def download_options():
 
     streams = convert_to_dict_list(yt_video.streams.filter(progressive=True))
     audio_streams = convert_to_dict_list(yt_video.streams.filter(only_audio=True, adaptive=True))
+    video_streams = convert_to_dict_list(yt_video.streams.filter(only_video=True, adaptive=True, file_extension="mp4"))
+
+    # Create an ordered dictionary to keep the first occurrence of progressive resolution
+    for stream in streams:
+        if stream["itag"] not in current_app.progressive_resolutions:
+            current_app.progressive_resolutions[stream["itag"]] = (stream["res"], stream["mime_type"], stream["progressive"])
 
     # Create an ordered dictionary to keep the first occurrence of each abr
     for stream in audio_streams:
-        if stream["abr"] not in current_app.audio_resolutions:
-            current_app.audio_resolutions[stream["abr"]] = (stream["itag"], stream["mime_type"])
-
-    # Create an ordered dictionary to keep the first occurrence of each video resolution
-    for stream in streams:
-        if stream["res"] not in current_app.video_resolutions:
-            current_app.video_resolutions[stream["res"]] = (stream["itag"], stream["mime_type"])
+        if stream["itag"] not in current_app.audio_resolutions:
+            current_app.audio_resolutions[stream["itag"]] = (stream["abr"], stream["mime_type"], stream["progressive"])
     
-    # Combine both dictionaries
-    combine_resolutions = OrderedDict(list(current_app.video_resolutions.items()) + list(current_app.audio_resolutions.items()))
+    # Create an ordered dictionary to keep the first occurrence of each video resolution
+    for stream in video_streams:
+        if stream["itag"] not in current_app.video_resolutions:
+            current_app.video_resolutions[stream["itag"]] = (stream["res"], stream["mime_type"], stream["progressive"])
+    
+    # Combine all dictionaries
+    combine_resolutions = OrderedDict(
+        list(current_app.progressive_resolutions.items()) + 
+        list(current_app.audio_resolutions.items()) + 
+        list(current_app.video_resolutions.items())
+    )
     current_app.combined_resolutions = combine_resolutions
     
     # Convert available resolutions into the desired list of dictionaries format
     available_resolutions_list = [
-        {"res": res, "itag": itag_type[0], "type": itag_type[1]}
+        {"itag": res, "res": itag_type[0], "type": itag_type[1], "progressive": itag_type[2]}
         for res, itag_type in current_app.combined_resolutions.items()
     ]
 
@@ -154,10 +166,11 @@ def download_video_thread(saved_link, input_resolution):
 
         try:
             yt_video = YouTube(saved_link, on_progress_callback=on_progress)
+            resolution_keys = list(current_app.combined_resolutions.keys())
 
             # Check if chosen resolution is available in list of resolutions
-            if input_resolution in current_app.combined_resolutions:
-                video_itag = current_app.combined_resolutions[input_resolution][0]
+            if 0 <= input_resolution < len(resolution_keys):
+                video_itag = resolution_keys[input_resolution]
                 
                 # Delete the previous video if it exists
                 previous_video_public_id = app.config.get("PREVIOUS_VIDEO_PUBLIC_ID")
@@ -192,7 +205,7 @@ def download_video():
     delete_all_files()
 
     data = request.get_json()
-    input_resolution = data.get("resolution")
+    input_resolution = data.get("resolutionIndex")
     saved_link = data.get("savedLink")
 
     # Generate a unique session ID
@@ -203,7 +216,7 @@ def download_video():
     socketio.start_background_task(download_video_thread, saved_link, input_resolution)
 
     return jsonify({
-        "chosen_resolution": input_resolution,
+        "resolution_index": input_resolution,
         "session_id": session_id,
     })
 
