@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Axios from "axios";
 import io from "socket.io-client";
@@ -74,6 +74,7 @@ export default function Home() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
   const mutation = useMutation<InputProps, Error, typeof inputLink>({
     mutationFn: sendInputLink,
@@ -122,6 +123,10 @@ export default function Home() {
     setDownloadUrl(null);
     setFileSize(null);
     setErrorMessage(null);
+    setTimeout(
+      () => sectionRef.current?.scrollIntoView({ behavior: "smooth" }),
+      500
+    );
     resolution_mutation.mutate({
       resolutionIndex: resolutionIndex,
       savedLink: savedLink,
@@ -259,9 +264,16 @@ export default function Home() {
       {resolution_mutation.isPending && (
         <Loading loadingMessage="Preparing Format" />
       )}
+
       {resolution_mutation.isError && (
         <Error errorMessage="Something went wrong. Refresh the page and try again." />
       )}
+
+      <div
+        ref={sectionRef}
+        style={{ height: "0.1em", scrollMargin: "14em" }}
+      ></div>
+
       {resolution_mutation.isSuccess &&
         resolution_mutation.data !== undefined && (
           <div className={styles["processing-format-text"]}>
