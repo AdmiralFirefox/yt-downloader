@@ -30,11 +30,13 @@ const FormatList = ({
             <p>
               {resolution.type === "video/mp4" && resolution.progressive === "False"
                 ? "mp4 (video only)"
+                : resolution.type === "video/webm" && resolution.progressive === "False"
+                ? "webm (video only)"
                 : resolution.type === "audio/mp4" && resolution.progressive === "False"
                 ? "m4a (audio only)"
                 : resolution.type === "audio/webm" && resolution.progressive === "False"
                 ? "webm (audio only)"
-                 : resolution.type === "video/mp4" && resolution.progressive === "True"
+                : resolution.type === "video/mp4" && resolution.progressive === "True"
                 ? "mp4"
                 : "mp4"
                 }

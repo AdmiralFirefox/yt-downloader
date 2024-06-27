@@ -121,7 +121,7 @@ def download_options():
 
     streams = convert_to_dict_list(yt_video.streams.filter(progressive=True))
     audio_streams = convert_to_dict_list(yt_video.streams.filter(only_audio=True, adaptive=True))
-    video_streams = convert_to_dict_list(yt_video.streams.filter(only_video=True, adaptive=True, file_extension="mp4"))
+    video_streams = convert_to_dict_list(yt_video.streams.filter(only_video=True, adaptive=True))
 
     # Create an ordered dictionary to keep the first occurrence of progressive resolution
     for stream in streams:
