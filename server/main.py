@@ -2,10 +2,10 @@ from flask import Flask, jsonify, request, current_app
 from flask_socketio import SocketIO, join_room, leave_room
 from flask_cors import CORS
 from pytubefix import YouTube
+from clear_videos import delete_files_with_pattern
 from collections import OrderedDict
 from cloudinary import uploader, config
 from dotenv import load_dotenv
-import shutil
 import uuid
 import os
 import re
@@ -42,20 +42,6 @@ with app.app_context():
     current_app.audio_resolutions = OrderedDict()
     current_app.combined_resolutions = OrderedDict()
 
-
-def delete_all_files():
-    # Delete all old uploaded images
-    for filename in os.listdir(VIDEO_FOLDER):
-        file_path = os.path.join(VIDEO_FOLDER, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print(f'Failed to delete {file_path}. Reason: {e}')
-
-
 # Converting Stream to List of Dictionaries
 def convert_to_dict_list(stream_list):
     dict_list = []
@@ -73,9 +59,7 @@ def convert_to_dict_list(stream_list):
     return dict_list
 
 
-def process_video(video_stream):
-    session_id = app.config.get("SESSION_ID")
-
+def process_video(video_stream, session_id):
     # Download the video
     video_path = video_stream.download(output_path=VIDEO_FOLDER)
     
@@ -121,8 +105,14 @@ def on_progress(stream, chunk, bytes_remaining):
 
 @app.route("/api/download_options", methods=["POST"])
 def download_options():
-    # Clear all files in the directory
-    delete_all_files()
+    # Delete the previous video if it exists
+    previous_video_public_id = app.config.get("PREVIOUS_VIDEO_PUBLIC_ID")
+    previous_video_resource_type = app.config.get("PREVIOUS_VIDEO_RESOURCE_TYPE")
+    if previous_video_public_id:
+        try:
+            uploader.destroy(previous_video_public_id, resource_type=previous_video_resource_type)
+        except Exception as e:
+            print(f"Failed to delete previous video: {e}")
 
     # Clear dictionaries
     current_app.progressive_resolutions.clear()
@@ -187,18 +177,9 @@ def download_video_thread(saved_link, input_resolution):
             # Check if chosen resolution is available in list of resolutions
             if 0 <= input_resolution < len(resolution_keys):
                 video_itag = resolution_keys[input_resolution]
-                
-                # Delete the previous video if it exists
-                previous_video_public_id = app.config.get("PREVIOUS_VIDEO_PUBLIC_ID")
-                previous_video_resource_type = app.config.get("PREVIOUS_VIDEO_RESOURCE_TYPE")
-                if previous_video_public_id:
-                    try:
-                        uploader.destroy(previous_video_public_id, resource_type=previous_video_resource_type)
-                    except Exception as e:
-                        print(f"Failed to delete previous video: {e}")
 
                 # Get url from cloudinary
-                video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag))
+                video_url = process_video(video_stream=yt_video.streams.get_by_itag(video_itag), session_id=session_id)
 
                 socketio.emit("video_ready", {
                     "video_url": video_url,
@@ -213,18 +194,16 @@ def download_video_thread(saved_link, input_resolution):
             socketio.emit("video_processing_status", {
                 "video_processing": False
             }, room=session_id)
+            delete_files_with_pattern(VIDEO_FOLDER, str(session_id))
 
 
 @app.route("/api/download_video", methods=["POST"])
 def download_video():
-    # Clear all files in the directory
-    delete_all_files()
-
     data = request.get_json()
     input_resolution = data.get("resolutionIndex")
     saved_link = data.get("savedLink")
 
-    # Generate a unique session ID
+    # Generate a new unique session ID
     session_id = str(uuid.uuid4())
     app.config["SESSION_ID"] = session_id
 
