@@ -26,7 +26,7 @@ app.secret_key = os.getenv("APP_SECRET_KEY")
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-VIDEO_FOLDER = "downloaded_yt_video"
+VIDEO_FOLDER = "/tmp/downloaded_yt_video"
 
 # Check if the upload folder exists in /downloaded_yt_video and create it if it doesn't
 if not os.path.exists(VIDEO_FOLDER):
@@ -74,17 +74,33 @@ def convert_to_dict_list(stream_list):
 
 
 def process_video(video_stream):
-    video_stream.download(output_path=VIDEO_FOLDER)
-   
-    filename = os.path.splitext(video_stream.default_filename)
-    file_path = os.path.join(VIDEO_FOLDER, video_stream.default_filename)
+    session_id = app.config.get("SESSION_ID")
+
+    # Download the video
+    video_path = video_stream.download(output_path=VIDEO_FOLDER)
+    
+    # Get the file extension
+    _, extension = os.path.splitext(video_path)
+    
+    # Create the new filename with UUID
+    base_name = os.path.basename(video_path)
+    new_filename = f"{os.path.splitext(base_name)[0]}_{session_id}{extension}"
+    
+    # Construct the new path
+    new_path = os.path.join(VIDEO_FOLDER, new_filename)
+    
+    # Rename the file
+    os.rename(video_path, new_path)
+
+    # Extract the original filename without extension for Cloudinary public_id
+    original_filename = os.path.splitext(base_name)[0]
 
     # Clean filename title for public_id (Remove emojis)
     emoji_pattern = r"[^\w\s_-]"
-    cleaned_title = re.sub(emoji_pattern, "", filename[0]).strip()
+    cleaned_title = re.sub(emoji_pattern, "", original_filename).strip()
 
     # Upload video to cloudinary
-    upload_result = uploader.upload_large(file_path,
+    upload_result = uploader.upload_large(new_path,
                                     public_id=cleaned_title,
                                     resource_type="video")
     
