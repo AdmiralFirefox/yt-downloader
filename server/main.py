@@ -86,6 +86,7 @@ def process_video(video_stream, session_id):
     # Upload video to cloudinary
     upload_result = uploader.upload_large(new_path,
                                     public_id=cleaned_title,
+                                    folder="yt-downloader",
                                     resource_type="video")
     
     app.config["PREVIOUS_VIDEO_PUBLIC_ID"] = upload_result["public_id"]
