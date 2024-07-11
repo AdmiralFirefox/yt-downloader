@@ -151,7 +151,8 @@ def download_options():
         list(current_app.audio_resolutions.items()) + 
         list(current_app.video_resolutions.items())
     )
-    current_app.combined_resolutions = combine_resolutions
+    filtered_combine_resolutions = OrderedDict((k, v) for k, v in combine_resolutions.items() if v[0] != "None")
+    current_app.combined_resolutions = filtered_combine_resolutions
     
     # Convert available resolutions into the desired list of dictionaries format
     available_resolutions_list = [
