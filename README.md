@@ -6,6 +6,6 @@
 
 A convenient way to download videos on YouTube and saving them to your device while offering various download formats.
 
-[You can access the website here.](https://yt-downloader-sigma-teal.vercel.app/)
+[You can access the website here.](https://yt-down-teal.vercel.app/)
 
 **Note: This is a PWA so you can download this on your local machine.**
